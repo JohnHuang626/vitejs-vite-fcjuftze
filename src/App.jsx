@@ -59,6 +59,7 @@ export default function App() {
   
   // 權限與登入
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminType, setAdminType] = useState('full'); // 'full' 或 'assistant'
   const [showLogin, setShowLogin] = useState(false);
   const [loginPassword, setLoginPassword] = useState('');
 
@@ -144,9 +145,17 @@ export default function App() {
     e.preventDefault();
     if (loginPassword === 'stu1234') {
       setIsAdmin(true);
+      setAdminType('full');
       setShowLogin(false);
       setLoginPassword('');
-      showToast('成功登入管理員系統');
+      showToast('成功登入管理員系統 (完整權限)');
+    } else if (loginPassword === 'stu888') {
+      setIsAdmin(true);
+      setAdminType('assistant');
+      setAdminTab('reports'); // 公差模式強制切換至報表
+      setShowLogin(false);
+      setLoginPassword('');
+      showToast('成功登入 (公差模式)');
     } else {
       showToast('密碼錯誤', 'error');
     }
@@ -727,12 +736,14 @@ export default function App() {
               >
                 <IconFileSpreadsheet className="w-5 h-5 inline-block mr-2 -mt-1" /> 缺曠課報表總覽
               </button>
-              <button 
-                onClick={() => setAdminTab('settings')}
-                className={`flex-1 py-3 rounded-lg font-medium transition ${adminTab === 'settings' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'}`}
-              >
-                <IconSettings className="w-5 h-5 inline-block mr-2 -mt-1" /> 系統設定與資料匯入
-              </button>
+              {adminType === 'full' && (
+                <button 
+                  onClick={() => setAdminTab('settings')}
+                  className={`flex-1 py-3 rounded-lg font-medium transition ${adminTab === 'settings' ? 'bg-blue-50 text-blue-700' : 'text-gray-500 hover:bg-gray-50'}`}
+                >
+                  <IconSettings className="w-5 h-5 inline-block mr-2 -mt-1" /> 系統設定與資料匯入
+                </button>
+              )}
             </div>
 
             {adminTab === 'reports' && (
@@ -799,7 +810,7 @@ export default function App() {
                                       <th className="px-4 py-2 text-left w-32">姓名</th>
                                       <th className="px-4 py-2 text-left w-24">狀態</th>
                                       <th className="px-4 py-2 text-left">備註 (時間/假別)</th>
-                                      <th className="px-4 py-2 text-center w-32 print:hidden">操作</th>
+                                      {adminType === 'full' && <th className="px-4 py-2 text-center w-32 print:hidden">操作</th>}
                                     </tr>
                                   </thead>
                                   <tbody className="divide-y divide-gray-100">
@@ -813,10 +824,12 @@ export default function App() {
                                         <td className="px-4 py-2 text-gray-600">
                                           {record.status === 'late' ? `到校時間: ${record.time}` : reasonMap[record.reason]}
                                         </td>
-                                        <td className="px-4 py-2 text-center print:hidden">
-                                          <button onClick={() => openEditRecord(student, record, cls)} className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-3">修改</button>
-                                          <button onClick={() => requestDeleteRecord(cls, student.seat)} className="text-red-600 hover:text-red-800 text-sm font-medium">刪除</button>
-                                        </td>
+                                        {adminType === 'full' && (
+                                          <td className="px-4 py-2 text-center print:hidden">
+                                            <button onClick={() => openEditRecord(student, record, cls)} className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-3">修改</button>
+                                            <button onClick={() => requestDeleteRecord(cls, student.seat)} className="text-red-600 hover:text-red-800 text-sm font-medium">刪除</button>
+                                          </td>
+                                        )}
                                       </tr>
                                     ))}
                                   </tbody>
