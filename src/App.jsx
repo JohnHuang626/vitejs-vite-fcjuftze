@@ -335,7 +335,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-blue-200">
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-blue-200" style={{ colorScheme: 'light' }}>
       
       {/* 載入中遮罩 (保護尚未連上 Firebase 前的閃爍) */}
       {!user && (
@@ -408,35 +408,35 @@ export default function App() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">出勤狀態</label>
-                <select 
-                  className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 outline-none"
-                  value={editingRecord.status}
-                  onChange={e => setEditingRecord({...editingRecord, status: e.target.value})}
-                >
+              <select 
+                className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 outline-none bg-white text-gray-900"
+                value={editingRecord.status}
+                onChange={e => setEditingRecord({...editingRecord, status: e.target.value})}
+              >
                   <option value="present">正常出勤 (清除紀錄)</option>
                   <option value="late">遲到</option>
                   <option value="absent">缺席</option>
                 </select>
               </div>
               {editingRecord.status === 'late' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">到校時間</label>
-                  <input 
-                    type="time" 
-                    className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 outline-none"
-                    value={editingRecord.time}
-                    onChange={e => setEditingRecord({...editingRecord, time: e.target.value})}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">到校時間</label>
+                <input 
+                  type="time" 
+                  className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 outline-none bg-white text-gray-900"
+                  value={editingRecord.time}
+                  onChange={e => setEditingRecord({...editingRecord, time: e.target.value})}
+                />
+              </div>
               )}
               {editingRecord.status === 'absent' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">假別</label>
-                  <select 
-                    className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 outline-none"
-                    value={editingRecord.reason}
-                    onChange={e => setEditingRecord({...editingRecord, reason: e.target.value})}
-                  >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">假別</label>
+                <select 
+                  className="w-full border border-gray-300 rounded p-2 focus:border-blue-500 outline-none bg-white text-gray-900"
+                  value={editingRecord.reason}
+                  onChange={e => setEditingRecord({...editingRecord, reason: e.target.value})}
+                >
                     {Object.entries(reasonMap).map(([key, label]) => (
                       <option key={key} value={key}>{label}</option>
                     ))}
@@ -494,7 +494,7 @@ export default function App() {
               <label className="block text-sm font-medium text-gray-700 mb-1">管理密碼</label>
               <input 
                 type="password" 
-                className="w-full border-gray-300 border rounded-md p-2 mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
+                className="w-full border-gray-300 border rounded-md p-2 mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900" 
                 placeholder="請輸入密碼"
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
@@ -520,7 +520,7 @@ export default function App() {
                   <IconCalendar className="w-5 h-5 text-gray-500" />
                   <input 
                     type="date" 
-                    className="border border-gray-300 rounded-md p-2 outline-none focus:border-blue-500 bg-white text-gray-800"
+                    className="border border-gray-300 rounded-md p-2 outline-none focus:border-blue-500 bg-white text-gray-900 cursor-pointer"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
                   />
@@ -529,7 +529,7 @@ export default function App() {
               
               <div className="w-full md:w-1/3">
                 <select 
-                  className="w-full border border-gray-300 rounded-md p-2.5 outline-none focus:border-blue-500 bg-white text-gray-800 font-medium"
+                  className="w-full border border-gray-300 rounded-md p-2.5 outline-none focus:border-blue-500 bg-white text-gray-900 font-medium"
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
                 >
@@ -555,7 +555,7 @@ export default function App() {
                 <p className="text-gray-500 text-sm mb-6">為防止誤填與亂填，請輸入班級專屬密碼。<br/>(預設密碼為班級名稱，如 {selectedClass})</p>
                 <input
                   type="password"
-                  className="w-full border-2 border-gray-200 rounded-lg p-3 mb-4 text-center text-xl tracking-widest focus:border-blue-500 focus:ring-0 outline-none transition-colors"
+                  className="w-full border-2 border-gray-200 rounded-lg p-3 mb-4 text-center text-xl tracking-widest focus:border-blue-500 focus:ring-0 outline-none transition-colors bg-white text-gray-900"
                   placeholder="請輸入密碼"
                   value={inputPin}
                   onChange={e => setInputPin(e.target.value)}
@@ -624,24 +624,24 @@ export default function App() {
                                   </button>
                                 </div>
                                 {isLate && (
-                                  <div className="flex items-center space-x-2 animate-fade-in">
-                                    <span className="text-sm text-gray-500">到校時間:</span>
-                                    <input 
-                                      type="time" 
-                                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none"
-                                      value={rec.time || '08:00'}
-                                      onChange={(e) => handleDetailChange(student.seat, 'time', e.target.value)}
-                                    />
-                                  </div>
-                                )}
-                                {isAbsent && (
-                                  <div className="flex items-center space-x-2 animate-fade-in">
-                                    <span className="text-sm text-gray-500">假別:</span>
-                                    <select 
-                                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 outline-none"
-                                      value={rec.reason || 'sick'}
-                                      onChange={(e) => handleDetailChange(student.seat, 'reason', e.target.value)}
-                                    >
+                                <div className="flex items-center space-x-2 animate-fade-in">
+                                  <span className="text-sm text-gray-500">到校時間:</span>
+                                  <input 
+                                    type="time" 
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none bg-white text-gray-900"
+                                    value={rec.time || '08:00'}
+                                    onChange={(e) => handleDetailChange(student.seat, 'time', e.target.value)}
+                                  />
+                                </div>
+                              )}
+                              {isAbsent && (
+                                <div className="flex items-center space-x-2 animate-fade-in">
+                                  <span className="text-sm text-gray-500">假別:</span>
+                                  <select 
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 outline-none bg-white text-gray-900"
+                                    value={rec.reason || 'sick'}
+                                    onChange={(e) => handleDetailChange(student.seat, 'reason', e.target.value)}
+                                  >
                                       {Object.entries(reasonMap).map(([key, label]) => (
                                         <option key={key} value={key}>{label}</option>
                                       ))}
@@ -702,16 +702,16 @@ export default function App() {
             {adminTab === 'reports' && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex justify-between items-center mb-6 print:hidden">
-                  <div className="flex items-center space-x-3">
-                    <label className="font-medium text-gray-700">選擇列印日期：</label>
-                    <input 
-                      type="date" 
-                      className="border border-gray-300 rounded-md p-2 outline-none focus:border-blue-500 bg-white text-gray-800"
-                      value={adminSelectedDate}
-                      onChange={(e) => setAdminSelectedDate(e.target.value)}
-                    />
-                  </div>
-                  <button onClick={() => window.print()} className="flex items-center bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-md transition">
+                <div className="flex items-center space-x-3">
+                  <label className="font-medium text-gray-700">選擇列印日期：</label>
+                  <input 
+                    type="date" 
+                    className="border border-gray-300 rounded-md p-2 outline-none focus:border-blue-500 bg-white text-gray-900 cursor-pointer"
+                    value={adminSelectedDate}
+                    onChange={(e) => setAdminSelectedDate(e.target.value)}
+                  />
+                </div>
+                <button onClick={() => window.print()} className="flex items-center bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-md transition">
                     <IconPrinter className="w-4 h-4 mr-2" /> 列印報表
                   </button>
                 </div>
