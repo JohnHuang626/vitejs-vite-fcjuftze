@@ -326,6 +326,18 @@ export default function App() {
     sick: '病假', personal: '事假', official: '公假', bereavement: '喪假', truancy: '曠課', other: '其他'
   };
 
+  // 新增：回到首頁的處理函式
+  const handleGoHome = () => {
+    setSelectedClass('');
+    setUnlockedClass(null);
+    setInputPin('');
+    setSelectedDate(getTaipeiDate());
+    if (isAdmin) {
+      setAdminTab('reports');
+      setAdminSelectedDate(getTaipeiDate());
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-blue-200" style={{ colorScheme: 'light' }}>
       
@@ -472,7 +484,12 @@ export default function App() {
       {/* 頁首 */}
       <header className="w-full bg-blue-700 text-white shadow-md print:hidden m-0">
         <div className="w-full max-w-none px-4 sm:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
+          {/* 加入 onClick 與 cursor-pointer 讓標題可點擊 */}
+          <div 
+            className="flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity" 
+            onClick={handleGoHome}
+            title="回到首頁"
+          >
             <div className="bg-white/20 p-2 rounded-lg">
               <IconCalendar className="w-6 h-6 text-white" />
             </div>
@@ -678,7 +695,7 @@ export default function App() {
                   {selectedDate !== getTaipeiDate() ? (
                     <div className="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
                       <p className="text-red-500 font-medium flex items-center">
-                        <IconAlertCircle className="w-5 h-5 mr-2" /> 非當日資料，僅供檢視無法修改
+                        <IconAlertCircle className="w-5 h-5 mr-2" /> 非當日資料，僅供檢視無法修改，如需要修改，請找學務處生教組長
                       </p>
                     </div>
                   ) : (
