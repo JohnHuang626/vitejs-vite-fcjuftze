@@ -32,12 +32,8 @@ const getTaipeiDate = () => {
 };
 
 // ================= FIREBASE SETUP =================
+// 已為您硬編碼填入專屬金鑰，發布至 Vercel 即可直接連線使用
 const getFirebaseConfig = () => {
-  if (typeof __firebase_config !== 'undefined') {
-    return JSON.parse(__firebase_config);
-  }
-  
-  // 直接填入您的 Firebase 專屬金鑰設定
   return {
     apiKey: "AIzaSyCAez-1cVu5dGQGo7t7C8bcmfJzpuCcF_I",
     authDomain: "school-attendance-eb2db.firebaseapp.com",
@@ -51,7 +47,7 @@ const getFirebaseConfig = () => {
 const app = initializeApp(getFirebaseConfig());
 const auth = getAuth(app);
 const firestoreDb = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'school-attendance-prod';
+const appId = 'school-attendance-prod';
 // ==================================================
 
 export default function App() {
@@ -89,11 +85,7 @@ export default function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
+        await signInAnonymously(auth);
       } catch (error) {
         console.error("Auth init error:", error);
       }
@@ -107,7 +99,7 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     
-    // 依據嚴格規定，資料儲存路徑為: /artifacts/{appId}/public/data/schoolData/main
+    // 資料儲存路徑為: /artifacts/{appId}/public/data/schoolData/main
     const docRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'schoolData', 'main');
     
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
@@ -186,7 +178,7 @@ export default function App() {
 
   const handleStatusChange = (seat, status) => {
     setAttendanceData(prev => {
-      // 動態建立物件，避免產生 undefined
+      // 動態建立物件，避免產生 undefined (Firebase 不支援 undefined)
       const newRecord = { status };
       if (status === 'late') {
         newRecord.time = '08:00';
@@ -335,8 +327,27 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-blue-200" style={{ colorScheme: 'light' }}>
+    <div className="w-full min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-blue-200" style={{ colorScheme: 'light' }}>
       
+      {/* ⚠️ 強制消除 Vite/Vercel 預設限制寬度的 CSS Reset (解決黑邊問題) */}
+      <style dangerouslySetInnerHTML={{__html: `
+        :root, html, body, #root {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          min-height: 100vh !important;
+          overflow-x: hidden !important;
+          display: block !important;
+        }
+        @media print {
+          body { background: white; }
+          .print\\:hidden { display: none !important; }
+          .print-area { padding: 0; }
+          .break-inside-avoid { break-inside: avoid; }
+        }
+      `}} />
+
       {/* 載入中遮罩 (保護尚未連上 Firebase 前的閃爍) */}
       {!user && (
         <div className="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
@@ -453,8 +464,8 @@ export default function App() {
       )}
 
       {/* 頁首 */}
-      <header className="bg-blue-700 text-white shadow-md print:hidden">
-        <div className="w-full px-4 sm:px-8 py-4 flex justify-between items-center">
+      <header className="w-full bg-blue-700 text-white shadow-md print:hidden m-0">
+        <div className="w-full max-w-none px-4 sm:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-3">
             <div className="bg-white/20 p-2 rounded-lg">
               <IconCalendar className="w-6 h-6 text-white" />
@@ -509,12 +520,12 @@ export default function App() {
       )}
 
       {/* 主要內容區 */}
-      <main className="w-full px-4 sm:px-8 py-8">
+      <main className="w-full max-w-none px-4 sm:px-8 py-8 mx-auto">
         
         {/* ================= USER VIEW (CLASS) ================= */}
         {!isAdmin && (
           <div className="space-y-6">
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between w-full max-w-5xl mx-auto">
               <div className="flex items-center space-x-4 w-full md:w-auto">
                 <div className="flex items-center space-x-2">
                   <IconCalendar className="w-5 h-5 text-gray-500" />
@@ -529,161 +540,162 @@ export default function App() {
               
               <div className="w-full md:w-1/3">
                 <select 
-                  className="w-full border border-gray-300 rounded-md p-2.5 outline-none focus:border-blue-500 bg-white text-gray-900 font-medium"
+                  className="w-full border border-gray-300 rounded-md p-2.5 outline-none focus:border-blue-500 bg-white text-gray-900 font-medium cursor-pointer"
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
                 >
-                  <option value="">-- 請選擇班級 --</option>
-                  {classes.map(c => <option key={c} value={c}>{c} 班</option>)}
+                  <option value="" className="bg-white text-gray-900">-- 請選擇班級 --</option>
+                  {classes.map(c => <option key={c} value={c} className="bg-white text-gray-900">{c} 班</option>)}
                 </select>
               </div>
             </div>
 
-            {classes.length === 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-6 rounded-xl flex items-center justify-center space-x-3">
-                <IconAlertTriangle className="w-6 h-6" />
-                <p>目前系統內尚無學生資料。請通知學務處登入後進行資料匯入。</p>
-              </div>
-            )}
-
-            {selectedClass && unlockedClass !== selectedClass && (
-              <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center max-w-md mx-auto mt-12 animate-fade-in-up">
-                <div className="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <IconKey className="w-8 h-8 text-blue-600" />
+            <div className="w-full max-w-5xl mx-auto">
+              {classes.length === 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 p-6 rounded-xl flex items-center justify-center space-x-3">
+                  <IconAlertTriangle className="w-6 h-6" />
+                  <p>目前系統內尚無學生資料。請通知學務處登入後進行資料匯入。</p>
                 </div>
-                <h3 className="text-2xl font-bold mb-2 text-gray-800">解鎖 {selectedClass} 班</h3>
-                <p className="text-gray-500 text-sm mb-6">為防止誤填與亂填，請輸入班級專屬密碼。<br/>(預設密碼為班級名稱，如 {selectedClass})</p>
-                <input
-                  type="password"
-                  className="w-full border-2 border-gray-200 rounded-lg p-3 mb-4 text-center text-xl tracking-widest focus:border-blue-500 focus:ring-0 outline-none transition-colors bg-white text-gray-900"
-                  placeholder="請輸入密碼"
-                  value={inputPin}
-                  onChange={e => setInputPin(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleUnlockClass()}
-                  autoFocus
-                />
-                <button 
-                  onClick={handleUnlockClass} 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-bold shadow-md transition-colors"
-                >
-                  進入點名表單
-                </button>
-              </div>
-            )}
+              )}
 
-            {selectedClass && unlockedClass === selectedClass && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
-                <div className="bg-blue-50 px-6 py-4 border-b border-blue-100 flex justify-between items-center">
-                  <h2 className="font-bold text-lg text-blue-800">{selectedClass} 班 - {selectedDate} 出缺席點名表</h2>
-                  {dailyData[selectedClass] && (
-                     <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium flex items-center">
-                       <IconCheckCircle className="w-3 h-3 mr-1" /> 已有雲端紀錄
-                     </span>
-                  )}
+              {selectedClass && unlockedClass !== selectedClass && (
+                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center max-w-md mx-auto mt-12 animate-fade-in-up">
+                  <div className="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <IconKey className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2 text-gray-800">解鎖 {selectedClass} 班</h3>
+                  <p className="text-gray-500 text-sm mb-6">為防止誤填與亂填，請輸入班級專屬密碼。<br/>(預設密碼為班級名稱，如 {selectedClass})</p>
+                  <input
+                    type="password"
+                    className="w-full border-2 border-gray-200 rounded-lg p-3 mb-4 text-center text-xl tracking-widest focus:border-blue-500 focus:ring-0 outline-none transition-colors bg-white text-gray-900"
+                    placeholder="請輸入密碼"
+                    value={inputPin}
+                    onChange={e => setInputPin(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleUnlockClass()}
+                    autoFocus
+                  />
+                  <button 
+                    onClick={handleUnlockClass} 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-3 font-bold shadow-md transition-colors"
+                  >
+                    進入點名表單
+                  </button>
                 </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
-                        <th className="p-4 w-20 text-center">座號</th>
-                        <th className="p-4 w-32">姓名</th>
-                        <th className="p-4">出缺席狀態與註記</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {classStudents.map(student => {
-                        const rec = attendanceData[student.seat] || { status: 'present' };
-                        const isLate = rec.status === 'late';
-                        const isAbsent = rec.status === 'absent';
-                        
-                        return (
-                          <tr key={student.seat} className="hover:bg-gray-50 transition">
-                            <td className="p-4 text-center font-medium text-gray-500">{student.seat}</td>
-                            <td className="p-4 font-bold text-gray-800">{student.name}</td>
-                            <td className="p-4">
-                              <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex bg-gray-100 p-1 rounded-lg">
-                                  <button 
-                                    onClick={() => handleStatusChange(student.seat, 'present')}
-                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${!isLate && !isAbsent ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:bg-gray-200'}`}
-                                  >
-                                    正常
-                                  </button>
-                                  <button 
-                                    onClick={() => handleStatusChange(student.seat, 'late')}
-                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center ${isLate ? 'bg-yellow-100 text-yellow-700 shadow-sm' : 'text-gray-500 hover:bg-gray-200'}`}
-                                  >
-                                    <IconClock4 className="w-3 h-3 mr-1" /> 遲到
-                                  </button>
-                                  <button 
-                                    onClick={() => handleStatusChange(student.seat, 'absent')}
-                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center ${isAbsent ? 'bg-red-100 text-red-700 shadow-sm' : 'text-gray-500 hover:bg-gray-200'}`}
-                                  >
-                                    <IconUserX className="w-3 h-3 mr-1" /> 缺席
-                                  </button>
-                                </div>
-                                {isLate && (
-                                <div className="flex items-center space-x-2 animate-fade-in">
-                                  <span className="text-sm text-gray-500">到校時間:</span>
-                                  <input 
-                                    type="time" 
-                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none bg-white text-gray-900"
-                                    value={rec.time || '08:00'}
-                                    onChange={(e) => handleDetailChange(student.seat, 'time', e.target.value)}
-                                  />
-                                </div>
-                              )}
-                              {isAbsent && (
-                                <div className="flex items-center space-x-2 animate-fade-in">
-                                  <span className="text-sm text-gray-500">假別:</span>
-                                  <select 
-                                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 outline-none bg-white text-gray-900"
-                                    value={rec.reason || 'sick'}
-                                    onChange={(e) => handleDetailChange(student.seat, 'reason', e.target.value)}
-                                  >
-                                      {Object.entries(reasonMap).map(([key, label]) => (
-                                        <option key={key} value={key}>{label}</option>
-                                      ))}
-                                    </select>
+              )}
+
+              {selectedClass && unlockedClass === selectedClass && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
+                  <div className="bg-blue-50 px-6 py-4 border-b border-blue-100 flex justify-between items-center">
+                    <h2 className="font-bold text-lg text-blue-800">{selectedClass} 班 - {selectedDate} 出缺席點名表</h2>
+                    {dailyData[selectedClass] && (
+                       <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium flex items-center">
+                         <IconCheckCircle className="w-3 h-3 mr-1" /> 已有雲端紀錄
+                       </span>
+                    )}
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[600px]">
+                      <thead>
+                        <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider border-b border-gray-200">
+                          <th className="p-4 w-20 text-center">座號</th>
+                          <th className="p-4 w-32">姓名</th>
+                          <th className="p-4">出缺席狀態與註記</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {classStudents.map(student => {
+                          const rec = attendanceData[student.seat] || { status: 'present' };
+                          const isLate = rec.status === 'late';
+                          const isAbsent = rec.status === 'absent';
+                          
+                          return (
+                            <tr key={student.seat} className="hover:bg-gray-50 transition">
+                              <td className="p-4 text-center font-medium text-gray-500">{student.seat}</td>
+                              <td className="p-4 font-bold text-gray-800">{student.name}</td>
+                              <td className="p-4">
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <div className="flex bg-gray-100 p-1 rounded-lg">
+                                    <button 
+                                      onClick={() => handleStatusChange(student.seat, 'present')}
+                                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${!isLate && !isAbsent ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:bg-gray-200'}`}
+                                    >
+                                      正常
+                                    </button>
+                                    <button 
+                                      onClick={() => handleStatusChange(student.seat, 'late')}
+                                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center ${isLate ? 'bg-yellow-100 text-yellow-700 shadow-sm' : 'text-gray-500 hover:bg-gray-200'}`}
+                                    >
+                                      <IconClock4 className="w-3 h-3 mr-1" /> 遲到
+                                    </button>
+                                    <button 
+                                      onClick={() => handleStatusChange(student.seat, 'absent')}
+                                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition flex items-center ${isAbsent ? 'bg-red-100 text-red-700 shadow-sm' : 'text-gray-500 hover:bg-gray-200'}`}
+                                    >
+                                      <IconUserX className="w-3 h-3 mr-1" /> 缺席
+                                    </button>
+                                  </div>
+                                  {isLate && (
+                                  <div className="flex items-center space-x-2 animate-fade-in">
+                                    <span className="text-sm text-gray-500">到校時間:</span>
+                                    <input 
+                                      type="time" 
+                                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-yellow-500 outline-none bg-white text-gray-900 cursor-pointer"
+                                      value={rec.time || '08:00'}
+                                      onChange={(e) => handleDetailChange(student.seat, 'time', e.target.value)}
+                                    />
                                   </div>
                                 )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                                {isAbsent && (
+                                  <div className="flex items-center space-x-2 animate-fade-in">
+                                    <span className="text-sm text-gray-500">假別:</span>
+                                    <select 
+                                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:border-red-500 outline-none bg-white text-gray-900 cursor-pointer"
+                                      value={rec.reason || 'sick'}
+                                      onChange={(e) => handleDetailChange(student.seat, 'reason', e.target.value)}
+                                    >
+                                        {Object.entries(reasonMap).map(([key, label]) => (
+                                          <option key={key} value={key} className="bg-white text-gray-900">{label}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {selectedDate !== getTaipeiDate() ? (
+                    <div className="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
+                      <p className="text-red-500 font-medium flex items-center">
+                        <IconAlertCircle className="w-5 h-5 mr-2" /> 非當日資料，僅供檢視無法修改
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="p-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-end items-center gap-4">
+                      <span className="text-sm text-gray-500 flex items-center">
+                        <IconCheckCircle className="w-4 h-4 mr-1" /> 重複送出將覆蓋當日資料
+                      </span>
+                      <button 
+                        onClick={submitAttendance}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-8 rounded-lg shadow-md transition flex items-center w-full sm:w-auto justify-center"
+                      >
+                        <IconUpload className="w-5 h-5 mr-2" /> 送出點名紀錄
+                      </button>
+                    </div>
+                  )}
                 </div>
-                {selectedDate !== getTaipeiDate() ? (
-                  <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end">
-                    <p className="text-red-500 font-medium flex items-center">
-                      <IconAlertCircle className="w-5 h-5 mr-2" /> 非當日資料，僅供檢視無法修改
-                    </p>
-                  </div>
-                ) : (
-                  <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row justify-end items-center gap-4">
-                    <span className="text-sm text-gray-500 flex items-center">
-                      <IconCheckCircle className="w-4 h-4 mr-1" /> 重複送出將覆蓋當日資料
-                    </span>
-                    <button 
-                      onClick={submitAttendance}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-8 rounded-lg shadow-md transition flex items-center w-full sm:w-auto justify-center"
-                    >
-                      <IconUpload className="w-5 h-5 mr-2" /> 送出點名紀錄
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
-        {}
         {/* ================= ADMIN VIEW ================= */}
         {isAdmin && (
-          <div className="space-y-6 animate-fade-in">
+          <div className="space-y-6 animate-fade-in w-full max-w-5xl mx-auto">
             <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-100 flex space-x-2 print:hidden">
               <button 
                 onClick={() => setAdminTab('reports')}
@@ -755,35 +767,37 @@ export default function App() {
                                 <IconCheckCircle className="w-4 h-4 inline mr-1 -mt-0.5" /> 全班全勤
                               </div>
                             ) : (
-                              <table className="w-full text-sm">
-                                <thead>
-                                  <tr className="bg-gray-50 text-gray-500 border-b">
-                                    <th className="px-4 py-2 text-left w-20">座號</th>
-                                    <th className="px-4 py-2 text-left w-32">姓名</th>
-                                    <th className="px-4 py-2 text-left w-24">狀態</th>
-                                    <th className="px-4 py-2 text-left">備註 (時間/假別)</th>
-                                    <th className="px-4 py-2 text-center w-32 print:hidden">操作</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                  {anomalies.map(({student, record}) => (
-                                    <tr key={student.seat}>
-                                      <td className="px-4 py-2">{student.seat}</td>
-                                      <td className="px-4 py-2 font-medium">{student.name}</td>
-                                      <td className="px-4 py-2">
-                                        {record.status === 'late' ? <span className="text-yellow-600">遲到</span> : <span className="text-red-600">缺席</span>}
-                                      </td>
-                                      <td className="px-4 py-2 text-gray-600">
-                                        {record.status === 'late' ? `到校時間: ${record.time}` : reasonMap[record.reason]}
-                                      </td>
-                                      <td className="px-4 py-2 text-center print:hidden">
-                                        <button onClick={() => openEditRecord(student, record, cls)} className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-3">修改</button>
-                                        <button onClick={() => requestDeleteRecord(cls, student.seat)} className="text-red-600 hover:text-red-800 text-sm font-medium">刪除</button>
-                                      </td>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-sm min-w-[500px]">
+                                  <thead>
+                                    <tr className="bg-gray-50 text-gray-500 border-b">
+                                      <th className="px-4 py-2 text-left w-20">座號</th>
+                                      <th className="px-4 py-2 text-left w-32">姓名</th>
+                                      <th className="px-4 py-2 text-left w-24">狀態</th>
+                                      <th className="px-4 py-2 text-left">備註 (時間/假別)</th>
+                                      <th className="px-4 py-2 text-center w-32 print:hidden">操作</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {anomalies.map(({student, record}) => (
+                                      <tr key={student.seat}>
+                                        <td className="px-4 py-2">{student.seat}</td>
+                                        <td className="px-4 py-2 font-medium">{student.name}</td>
+                                        <td className="px-4 py-2">
+                                          {record.status === 'late' ? <span className="text-yellow-600 font-bold">遲到</span> : <span className="text-red-600 font-bold">缺席</span>}
+                                        </td>
+                                        <td className="px-4 py-2 text-gray-600">
+                                          {record.status === 'late' ? `到校時間: ${record.time}` : reasonMap[record.reason]}
+                                        </td>
+                                        <td className="px-4 py-2 text-center print:hidden">
+                                          <button onClick={() => openEditRecord(student, record, cls)} className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-3">修改</button>
+                                          <button onClick={() => requestDeleteRecord(cls, student.seat)} className="text-red-600 hover:text-red-800 text-sm font-medium">刪除</button>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
                             )}
                           </div>
                         );
@@ -796,7 +810,7 @@ export default function App() {
                            </h4>
                            <div className="flex flex-wrap gap-2">
                              {classes.filter(c => !adminDailyData[c]).map(c => (
-                               <span key={c} className="bg-white border border-red-200 text-red-600 px-2 py-1 rounded text-sm">{c} 班</span>
+                               <span key={c} className="bg-white border border-red-200 text-red-600 px-2 py-1 rounded text-sm font-medium shadow-sm">{c} 班</span>
                              ))}
                            </div>
                          </div>
@@ -865,7 +879,7 @@ export default function App() {
                           <span className="font-medium text-gray-700">{c} 班</span>
                           <input
                             type="text"
-                            className="w-16 border border-gray-300 rounded px-1 py-1 text-center text-sm focus:border-blue-500 outline-none bg-white"
+                            className="w-16 border border-gray-300 rounded px-1 py-1 text-center text-sm focus:border-blue-500 outline-none bg-white text-gray-900"
                             defaultValue={db.passwords?.[c] !== undefined ? db.passwords[c] : c}
                             onBlur={(e) => {
                               const newPass = e.target.value;
@@ -885,15 +899,6 @@ export default function App() {
           </div>
         )}
       </main>
-      
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body { background: white; }
-          .print\\:hidden { display: none !important; }
-          .print-area { padding: 0; }
-          .break-inside-avoid { break-inside: avoid; }
-        }
-      `}} />
     </div>
   );
 }
