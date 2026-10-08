@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // Firebase Imports
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 
 // ================= CUSTOM SVG ICONS (Replaces lucide-react) =================
@@ -329,7 +329,7 @@ export default function App() {
   return (
     <div className="w-full min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-blue-200" style={{ colorScheme: 'light' }}>
       
-      {/* ⚠️ 強制消除 Vite/Vercel 預設限制寬度的 CSS Reset (解決黑邊問題) */}
+      {/* ⚠️ 強制消除 Vite/Vercel 預設限制寬度的 CSS Reset (解決黑邊問題) 並且加入動畫 class */}
       <style dangerouslySetInnerHTML={{__html: `
         :root, html, body, #root {
           margin: 0 !important;
@@ -346,6 +346,12 @@ export default function App() {
           .print-area { padding: 0; }
           .break-inside-avoid { break-inside: avoid; }
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+        .animate-fade-in-down { animation: fadeInDown 0.4s ease-out forwards; }
       `}} />
 
       {/* 載入中遮罩 (保護尚未連上 Firebase 前的閃爍) */}
@@ -494,6 +500,7 @@ export default function App() {
         </div>
       </header>
 
+      {/* Admin Login Modal */}
       {showLogin && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden animate-fade-in-up">
